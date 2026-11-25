@@ -1,0 +1,195 @@
+import {
+  BriefcaseIcon,
+  HistoryIcon,
+  MailIcon,
+  PencilIcon,
+  Trash2Icon,
+  UserRoundIcon,
+} from "lucide-react";
+import React from "react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
+
+const EmployeeCard = ({ employee, onDelete, onEdit, onViewHistory }) => {
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this employee?")) return;
+
+    try {
+      await api.delete(`/employees/${employee._id}`);
+
+      toast.success("Employee deleted successfully");
+
+      onDelete();
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleSendMail = () => {
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=${employee.email}&su=EMS Notification&body=Hello ${employee.firstName},`,
+      "_blank",
+    );
+  };
+
+  const handleViewHistory = () => {
+    onViewHistory(employee);
+  };
+
+  const initials = `${employee?.firstName?.[0] || ""}${
+    employee?.lastName?.[0] || ""
+  }`.toUpperCase();
+
+  return (
+    <div className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white/85 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+      {/* Top Background */}
+      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-indigo-500 via-violet-500 to-slate-900">
+        <div className="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl" />
+
+        <div className="absolute bottom-0 right-0 h-36 w-36 rounded-full bg-indigo-200/20 blur-2xl" />
+
+        {/* Department Badge */}
+        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+          {employee?.isDeleted && (
+            <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
+              Deleted
+            </span>
+          )}
+        </div>
+
+        {/* Top Buttons */}
+        {!employee?.isDeleted && (
+          <div className="absolute right-4 top-4 flex gap-2 opacity-100 transition-all duration-300 sm:opacity-0 group-hover:opacity-100">
+            {/* History */}
+            <button
+              onClick={handleViewHistory}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all duration-300 hover:scale-105 hover:text-violet-600"
+              title="View login history"
+            >
+              <HistoryIcon className="h-4 w-4" />
+            </button>
+
+            {/* Mail */}
+            {employee?.email && (
+              <button
+                onClick={handleSendMail}
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all duration-300 hover:scale-105 hover:text-indigo-600"
+                title="Send email"
+              >
+                <MailIcon className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Edit */}
+            <button
+              onClick={() => onEdit(employee)}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all duration-300 hover:scale-105 hover:text-indigo-600"
+              title="Edit employee"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+
+            {/* Delete */}
+            <button
+              onClick={handleDelete}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all duration-300 hover:scale-105 hover:text-rose-600"
+              title="Delete employee"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Avatar */}
+      <div className="relative px-5">
+        <div className="-mt-10 flex h-20 w-20 items-center justify-center rounded-3xl border-4 border-white bg-gradient-to-br from-indigo-100 to-violet-100 shadow-lg">
+          {initials ? (
+            <span className="text-2xl font-bold text-indigo-600">
+              {initials}
+            </span>
+          ) : (
+            <UserRoundIcon className="h-8 w-8 text-indigo-500" />
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 pb-5 pt-4">
+        <h3 className="truncate text-lg font-bold text-slate-900">
+          {employee?.firstName} {employee?.lastName}
+        </h3>
+
+        <p className="mt-1 truncate text-sm font-medium text-slate-500">
+          {employee?.position || "Employee"}
+        </p>
+
+        <div className="mt-5 space-y-3">
+          {/* Department */}
+          <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5">
+            <BriefcaseIcon className="h-4 w-4 text-indigo-500" />
+
+            <span className="truncate text-sm text-slate-600">
+              {employee?.department || "No department"}
+            </span>
+          </div>
+
+          {/* Email */}
+          {employee?.email && (
+            <button
+              onClick={handleSendMail}
+              className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5 text-left transition hover:bg-indigo-50"
+            >
+              <MailIcon className="h-4 w-4 text-indigo-500" />
+
+              <span className="truncate text-sm text-slate-600">
+                {employee.email}
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Buttons */}
+        {!employee?.isDeleted && (
+          <div className="mt-5 grid grid-cols-4 gap-3 sm:hidden">
+            {/* History */}
+            <button
+              onClick={handleViewHistory}
+              className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-600 transition hover:bg-violet-100"
+            >
+              History
+            </button>
+
+            {/* Mail */}
+            {employee?.email && (
+              <button
+                onClick={handleSendMail}
+                className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-100"
+              >
+                Mail
+              </button>
+            )}
+
+            {/* Edit */}
+            <button
+              onClick={() => onEdit(employee)}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600"
+            >
+              Edit
+            </button>
+
+            {/* Delete */}
+            <button
+              onClick={handleDelete}
+              className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-100"
+            >
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default EmployeeCard;
